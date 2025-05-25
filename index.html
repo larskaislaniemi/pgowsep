@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PGP</title>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-rows: 1fr 1fr 1fr;
+                gap: 1em;
+            }
+
+            #uiMyKey, #uiLoadKey, #uiGenerateKey, #uiTheirKey, #uiInputAction, #uiSettings {
+                border: solid black 1px;
+                padding: 0.5em;
+            }
+
+            #uiMyKey {
+                background-color: #ffffcc;
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            #uiLoadKey { 
+                background-color: #ffccff;
+            }
+
+            #uiGenerateKey {
+                background-color: #ccffff;
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            #uiGenerateKeyInput {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                grid-auto-rows: auto;
+            }
+
+            #uiTheirKey {
+                background-color: #ccccff;
+                grid-column: 1 / 3;
+                grid-row: 2;
+            }
+
+            #uiTheirKey li {
+                list-style: none;
+            }
+
+            #uiTheirKey li a {
+                margin-right: 1em;
+                float: left;
+            }
+
+            #uiInputAction {
+                background-color: #ccffcc;
+                grid-column: 1 / 3;
+                grid-row: 3;
+            }
+
+            #uiSettings {
+                background-color: #ffcccc;
+                grid-column: 3;
+                grid-row: 1 / 4;
+            }
+
+            #uiSettingsValues {
+                display: grid;
+                grid-template-columns: auto auto;
+            }
+
+        </style>
+    </head>
+    <body>
+        <script src="lib/openpgp.min.js"></script>
+        <script src="pgowsep.js" defer></script>
+
+        <div id="uiMyKey">
+            <h1>My private key</h1>
+            <p>Required for decrypting. Optional for encryption &mdash; the message will be signed if a private key is loaded.</p>
+            <p><u>Status</u>: <span id="uiLabelMyKeyStatus">No key loaded</span> <span id="uiLabelMyKeyId"></span></p>
+
+            <div id="uiLoadKey">
+                <h1>Load a private key</h1>
+                <label for="buttonLoadKey">Load private key: </label>
+                <input type="file" id="buttonLoadKey"/>
+            </div>
+    
+        </div>
+
+        <div id="uiGenerateKey">
+            <h1>Generate a new key pair</h1>
+
+            <div id="uiGenerateKeyInput">
+                <div><label for="inputGenerateKey_name">Name</label></div>
+                <div><input type="text" id="inputGenerateKey_name"/></div>
+                
+                <div><label for="inputGenerateKey_email">E-Mail</label></div>
+                <div><input type="text" id="inputGenerateKey_email"/></div>
+                
+                <div><label for="inputGenerateKey_passphrase1">Passphrase</label></div>
+                <div><input type="password" id="inputGenerateKey_passphrase1"/></div>
+                
+                <div><label for="inputGenerateKey_passphrase2">Passphrase (again)</label></div>
+                <div><input type="password" id="inputGenerateKey_passphrase2"/></div>
+                
+                <div></div>
+                <div><input type="button" id="buttonGenerateKey" value="Generate"/></div>
+            </div>
+
+            <div id="uiGenerateKeyOutput">
+                <div id="textGeneratedKey"></div>
+                <div><a id="useGeneratedKey"></a></div>
+                <div><a id="linkPrivateKey"></a></div>
+                <div><a id="linkPublicKey"></a></div>
+                <div><a id="linkRevocationKey"></a></div>
+            </div>
+        </div>
+
+
+        <div id="uiTheirKey">
+            <h1>Other party's public key</h1>
+
+            <p>Required for encrypting. (<i>Not implemented:</i> Optional for decrypting &mdash; the message signature will be checked if a public key is loaded.)</p>
+            <label for="buttonLoadTheirKey">Load other party's public key:</label>
+            <input type="file" id="buttonLoadTheirKey"/>
+
+            <ul id="uiListTheirKeys"></ul>
+        </div>
+
+        <div id="uiInputAction">
+            <h1>Input and operations</h1>
+
+            <div id="uiInputActionInput">
+                <label for="buttonLoadInputFile">Select input file</label>
+                <input type="file" id="buttonLoadInputFile"/>
+            </div>
+
+            <div id="uiInputActionAction">
+                <input type="button" id="buttonEncrypt" value="Encrypt"/>
+                <input type="button" id="buttonDecrypt" value="Decrypt"/>
+            </div>
+
+            <div id="uiInputActionOutput">
+                <a href="#" id="linkResultFile"></a>
+            </div>
+        </div>
+
+        <div id="uiSettings">
+            <h1>Settings</h1>
+
+            <div id="uiSettingsValues">
+                <div><input type="checkbox" id="settingsArmoredOutput" checked/></div>
+                <div><label for="settingsArmoredOutput">Always ASCII armored output</label></div>
+            </div>
+        </div>
+
+    </body>
+</html>
+
+          
