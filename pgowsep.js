@@ -22,10 +22,9 @@ window.pgp_STATE.setKey = function(priv, pub, rev) {
     else s.revocationKey = undefined;
 
     let el_keyIdText = document.getElementById('uiLabelMyKeyId');
-    if (s.privateKey) el_keyIdText.innerText = s.privateKey.getUserIDs();
-    else if (s.publicKey) el_keyIdText.innerText = s.publicKey.getUserIDs();
+    if (s.privateKey) el_keyIdText.innerText = s.privateKey.getUserIDs() + ' (' + s.privateKey.getKeyID().toHex() + ')';
+    else if (s.publicKey) el_keyIdText.innerText = s.publicKey.getUserIDs() + ' (' + s.privateKey.getKeyID().toHex() + ')';
     else el_keyIdText.innerText = '[no user ID]';
-    if (el_keyIdText.innerText == '') el_keyIdText.innerText = '[empty user ID]';
 
     if (s.privateKey && s.publicKey) {
         document.getElementById('uiLabelMyKeyStatus').innerText = 'Private and public key loaded. ';
