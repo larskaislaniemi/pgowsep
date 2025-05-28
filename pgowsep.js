@@ -21,23 +21,24 @@ window.pgp_STATE.setKey = function(priv, pub, rev) {
     if (rev) s.revocationKey = rev;
     else s.revocationKey = undefined;
 
-    let el_keyIdText = document.getElementById('uiMyKey').querySelector("#uiLabelMyKeyId");
+    let el_keyIdText = document.getElementById('uiLabelMyKeyId');
     if (s.privateKey) el_keyIdText.innerText = s.privateKey.getUserIDs();
     else if (s.publicKey) el_keyIdText.innerText = s.publicKey.getUserIDs();
     else el_keyIdText.innerText = '[no user ID]';
+    if (el_keyIdText.innerText == '') el_keyIdText.innerText = '[empty user ID]';
 
     if (s.privateKey && s.publicKey) {
-        document.getElementById('uiMyKey').querySelector("#uiLabelMyKeyStatus").innerText = 'Private and public key loaded';
+        document.getElementById('uiLabelMyKeyStatus').innerText = 'Private and public key loaded. ';
         const el_link = document.createElement('A');
         const resURL = window.URL.createObjectURL(new Blob([s.publicKey.armor()], { type: "text/plain" }));
         el_link.href = resURL;
         el_link.download = s.publicKey.getUserIDs() + ".pub.asc";
-        el_link.innerText = 'Download public key';
-        document.getElementById('uiMyKey').querySelector("#uiLabelMyKeyStatus").appendChild(el_link);
+        el_link.innerText = 'Download public key.';
+        document.getElementById('uiLabelMyKeyStatus').appendChild(el_link);
      } else if (s.privateKey) {
-        document.getElementById('uiMyKey').querySelector("#uiLabelMyKeyStatus").innerText = 'Private key loaded';
+        document.getElementById('uiLabelMyKeyStatus').innerText = 'Private key loaded';
     } else if (s.publicKey) {
-        document.getElementById('uiMyKey').querySelector("#uiLabelMyKeyStatus").innerText = 'Public key loaded';
+        document.getElementById('uiLabelMyKeyStatus').innerText = 'Public key loaded';
     }
 }
 
@@ -63,8 +64,9 @@ window.pgp_STATE.refreshUITheirKeys = function() {
         }
         
         let el_key = document.createElement('LI');
-        el_key.innerText = s.theirKeys[i].getUserIDs();
-        if (el_key.innerText.length <= 0) el_key.innerText = '[no user ID]';
+        el_key.innerText = s.theirKeys[i].getUserIDs() + ' ';
+        if (el_key.innerText.length <= 0) el_key.innerText = '[no user ID] ';
+        el_key.innerText += ('(' + s.theirKeys[i].getKeyID().toHex() + ')')
         let el_remove = document.createElement('A');
         el_remove.innerText = '[X]';
         el_remove.href = '#';
@@ -284,20 +286,35 @@ async function doDecrypt(evt) {
             alert("Failed to read encrypted message!");
             return;
         }
-
+        
         let encmsg;
         try {
             encmsg = await openpgp.decrypt({
                 message: msg,
                 decryptionKeys: key,
-                verificationKeys: window.pgp_STATE.privateKey,
                 format: outfmt,
+                verificationKeys: window.pgp_STATE.theirKeys,
+                expectSigned: window.pgp_STATE.settings.settingsExpectSigned,
             });
         } catch (err) {
             console.log(err);
-            alert("Failed to decrypt the message!");
+            alert("Failed to decrypt the message! " + err);
             return;
         }
+        
+        domClearNodes(document.getElementById('uiOutputInformation'));
+        let el_list = document.createElement('UL');
+        document.getElementById('uiOutputInformation').appendChild(el_list);
+        for (k of encmsg.signatures) {
+            let el_entry = document.createElement('LI');
+            el_entry.innerText = 'Unable to verify the signature for key ' + k.keyID.toHex();
+            el_list.appendChild(el_entry);
+            k.verified.then((res) => {
+                console.log(res);
+                el_entry.innerText = 'Signature verified for ' + k.keyID.toHex();
+            });
+        }
+        console.log(encmsg.signatures);
         
         const el_link = document.getElementById('linkResultFile');
         const resURL = window.URL.createObjectURL(new Blob([encmsg.data], { type: "text/plain" }));
